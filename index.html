@@ -298,7 +298,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="game-title">Tru Gifts</div>
+            <div class="game-title">ADVANCE STARS</div>
             <div class="game-subtitle">КРАШ ИГРА</div>
         </div>
 
@@ -372,15 +372,22 @@
         let betMultiplier = 2.00;
         let gameRunning = false;
         
-        // Загрузка баланса из localStorage (в реальном приложении - с сервера)
-        function loadBalance() {
-            const user = tg.initDataUnsafe.user;
-            if (user) {
-                const savedBalance = localStorage.getItem(`tg_balance_${user.id}`);
-                balance = savedBalance ? parseFloat(savedBalance) : 0;
-            } else {
-                balance = parseFloat(localStorage.getItem('tg_balance')) || 0;
+        // Функция для получения баланса из Telegram Web App данных
+        function getBalanceFromTelegram() {
+            // В реальном приложении здесь должен быть запрос к вашему серверу
+            // для получения реального баланса пользователя
+            const initData = tg.initDataUnsafe;
+            if (initData.user) {
+                // В демо-версии используем localStorage
+                const savedBalance = localStorage.getItem(`tg_balance_${initData.user.id}`);
+                return savedBalance ? parseFloat(savedBalance) : 0;
             }
+            return parseFloat(localStorage.getItem('tg_balance')) || 0;
+        }
+        
+        // Загрузка баланса
+        function loadBalance() {
+            balance = getBalanceFromTelegram();
             updateDisplay();
         }
         
@@ -415,7 +422,7 @@
             }
             
             if (betAmount > balance) {
-                showNotification('Недостаточно звезд!', 'error');
+                showNotification('Недостаточно звезд! Пополните баланс в боте.', 'error');
                 return;
             }
             
@@ -426,7 +433,7 @@
             // Анимация запуска игры
             startGameAnimation();
             
-            
+            // Симуляция игры с рандомным результатом
             setTimeout(() => {
                 const crashPoint = (Math.random() * 10 + 1).toFixed(2);
                 const win = parseFloat(crashPoint) > betMultiplier;
@@ -444,9 +451,9 @@
                 }
                 
                 // Сохранение баланса
-                const user = tg.initDataUnsafe.user;
-                if (user) {
-                    localStorage.setItem(`tg_balance_${user.id}`, balance.toString());
+                const initData = tg.initDataUnsafe;
+                if (initData.user) {
+                    localStorage.setItem(`tg_balance_${initData.user.id}`, balance.toString());
                 } else {
                     localStorage.setItem('tg_balance', balance.toString());
                 }
@@ -520,8 +527,10 @@
             }
         }, 2000);
         
-        // Инициализация
-        loadBalance();
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBalance();
+        });
     </script>
 </body>
 </html>
